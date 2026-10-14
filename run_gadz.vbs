@@ -9,10 +9,12 @@ If Not FileSystem.FileExists(PythonExe) Then
 	PythonExe = "python"
 End If
 
-PythonCommand = """" & PythonExe & """ """ & ProjectDir & "\translate.py" & """ --server"
+PythonCommand = """" & PythonExe & """ """ & ProjectDir & "\translate.py"" --server"
 WshShell.Run PythonCommand, 0, False
 
-WScript.Sleep 8000
+WScript.Sleep 5000
 
 ExecutableCommand = """" & ProjectDir & "\gadz.exe" & """"
-WshShell.Run ExecutableCommand, 1, False
+If FileSystem.FileExists(ProjectDir & "\gadz.exe") Then
+	WshShell.Run ExecutableCommand, 1, False
+End If

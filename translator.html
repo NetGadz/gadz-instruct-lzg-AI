@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GADZ — Лезгинский переводчик</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+  :root {
+    --bg: #f7f7f5; --surface: #ffffff; --sidebar: #f0f1ee;
+    --text: #222522; --muted: #737873; --line: #e2e4df;
+    --accent: #2d6a4f; --accent-soft: #e8f2ec; --danger: #a9473c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    font-family: 'DM Sans', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(255,255,255,.85);
+    backdrop-filter: blur(12px);
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .header-logo {
+    display: grid;
+    place-items: center;
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    color: white;
+    background: var(--accent);
+    font: 700 22px Georgia, serif;
+  }
+  .header-title {
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .header-subtitle {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .header-right a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    transition: .2s;
+  }
+  .header-right a:hover {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+
+  /* Main layout */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 24px 24px;
+  }
+  .page-title {
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 600;
+    letter-spacing: -1.2px;
+    margin-bottom: 8px;
+  }
+  .page-desc {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 36px;
+    text-align: center;
+  }
+
+  /* Translator panel */
+  .translator {
+    display: grid;
+    grid-template-columns: 1fr 48px 1fr;
+    gap: 0;
+    width: 100%;
+    max-width: 960px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    box-shadow: 0 6px 24px rgba(34,37,34,.06);
+    overflow: hidden;
+  }
+
+  .panel {
+    display: flex;
+    flex-direction: column;
+  }
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(240,241,238,.5);
+  }
+  .lang-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .lang-code {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: .5px;
+  }
+  .panel textarea {
+    flex: 1;
+    min-height: 220px;
+    border: none;
+    outline: none;
+    resize: none;
+    padding: 18px;
+    font-family: inherit;
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--text);
+    background: transparent;
+  }
+  .panel textarea::placeholder {
+    color: #a8ada8;
+  }
+  .panel-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 18px;
+    border-top: 1px solid var(--line);
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .char-count {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Swap column */
+  .swap-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    background: var(--bg);
+  }
+  .swap-btn {
+    width: 36px; height: 36px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--accent);
+    font-size: 16px;
+    cursor: pointer;
+    transition: .2s;
+    display: grid;
+    place-items: center;
+  }
+  .swap-btn:hover {
+    background: var(--accent-soft);
+    transform: rotate(180deg);
+  }
+
+  /* Buttons row */
+  .actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .btn {
+    padding: 11px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .2s;
+  }
+  .btn-primary {
+    color: white;
+    background: var(--accent);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: #24583f;
+    transform: translateY(-1px);
+  }
+  .btn-primary:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+  }
+  .btn-secondary {
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid #c5dccb;
+  }
+  .btn-secondary:hover {
+    background: #d5eadb;
+  }
+  .btn-auto {
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--line);
+    font-size: 11px;
+  }
+  .btn-auto:hover {
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .btn-auto.active {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  /* Status */
+  .status {
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--muted);
+    min-height: 20px;
+  }
+  .status.error { color: var(--danger); }
+
+  /* History */
+  .history {
+    width: 100%;
+    max-width: 960px;
+    margin-top: 40px;
+  }
+  .history-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: .8px;
+    margin-bottom: 12px;
+  }
+  .history-item {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: var(--surface);
+    font-size: 13px;
+    cursor: pointer;
+    transition: .15s;
+  }
+  .history-item:hover {
+    border-color: #c5d4c8;
+    background: #fafbfa;
+  }
+  .history-item .src {
+    color: var(--muted);
+  }
+  .history-item .tgt {
+    color: var(--text);
+    font-weight: 500;
+  }
+  .history-clear {
+    margin-top: 8px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .history-clear:hover { color: var(--danger); }
+
+  /* Loading animation */
+  .loading-dots::after {
+    content: '';
+    animation: dots 1.2s steps(4, end) infinite;
+  }
+  @keyframes dots {
+    0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; }
+  }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .translator {
+      grid-template-columns: 1fr;
+    }
+    .swap-col {
+      border-left: none;
+      border-right: none;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 8px;
+    }
+    .swap-btn { transform: rotate(90deg); }
+    .swap-btn:hover { transform: rotate(270deg); }
+    .history-item { grid-template-columns: 1fr; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-logo">g</div>
+    <div>
+      <div class="header-title">gadz</div>
+      <div class="header-subtitle">Переводчик</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <a href="http://127.0.0.1:8765/translator" title="Переводчик">Переводчик</a>
+  </div>
+</div>
+
+<div class="main">
+  <h1 class="page-title">Русский ⇄ Лезгинский</h1>
+  <p class="page-desc">Локальный нейросетевой перевод. Текст не покидает ваш компьютер.</p>
+
+  <div class="translator">
+    <!-- Source panel -->
+    <div class="panel" id="src-panel">
+      <div class="panel-header">
+        <span class="lang-name" id="src-lang-name">Русский</span>
+        <span class="lang-code" id="src-lang-code">rus_Cyrl</span>
+      </div>
+      <textarea id="src-text" placeholder="Введите текст для перевода..." maxlength="2000"></textarea>
+      <div class="panel-footer">
+        <span class="char-count"><span id="src-chars">0</span> / 2000</span>
+        <button class="btn-auto" id="auto-detect-btn" title="Авто-определение языка">АВТО</button>
+      </div>
+    </div>
+
+    <!-- Swap -->
+    <div class="swap-col">
+      <button class="swap-btn" id="swap-btn" title="Поменять языки">⇄</button>
+    </div>
+
+    <!-- Target panel -->
+    <div class="panel" id="tgt-panel">
+      <div class="panel-header">
+        <span class="lang-name" id="tgt-lang-name">Лезгинский</span>
+        <span class="lang-code" id="tgt-lang-code">lez_Cyrl</span>
+      </div>
+      <textarea id="tgt-text" placeholder="Перевод появится здесь..." readonly></textarea>
+      <div class="panel-footer">
+        <span class="char-count"><span id="tgt-chars">0</span> символов</span>
+        <button class="btn-auto" id="copy-btn" title="Копировать">КОПИРОВАТЬ</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" id="translate-btn">Перевести</button>
+    <button class="btn btn-secondary" id="clear-btn">Очистить</button>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <div class="history" id="history-section" style="display:none">
+    <div class="history-title">ИСТОРИЯ ПЕРЕВОДОВ</div>
+    <div id="history-list"></div>
+    <button class="history-clear" id="history-clear">Очистить историю</button>
+  </div>
+</div>
+
+<script>
+const API = 'http://127.0.0.1:8765/api/translate';
+
+const srcText = document.getElementById('src-text');
+const tgtText = document.getElementById('tgt-text');
+const srcChars = document.getElementById('src-chars');
+const tgtChars = document.getElementById('tgt-chars');
+const srcLangName = document.getElementById('src-lang-name');
+const tgtLangName = document.getElementById('tgt-lang-name');
+const srcLangCode = document.getElementById('src-lang-code');
+const tgtLangCode = document.getElementById('tgt-lang-code');
+const translateBtn = document.getElementById('translate-btn');
+const clearBtn = document.getElementById('clear-btn');
+const swapBtn = document.getElementById('swap-btn');
+const autoBtn = document.getElementById('auto-detect-btn');
+const copyBtn = document.getElementById('copy-btn');
+const statusEl = document.getElementById('status');
+const historySection = document.getElementById('history-section');
+const historyList = document.getElementById('history-list');
+const historyClear = document.getElementById('history-clear');
+
+let currentSrc = 'rus_Cyrl';
+let currentTgt = 'lez_Cyrl';
+let autoDetect = false;
+let history = JSON.parse(localStorage.getItem('gadz_translate_history') || '[]');
+
+function updateLangDisplay() {
+  const names = { 'rus_Cyrl': 'Русский', 'lez_Cyrl': 'Лезгинский' };
+  srcLangName.textContent = autoDetect ? 'Авто' : names[currentSrc];
+  srcLangCode.textContent = autoDetect ? 'auto' : currentSrc;
+  tgtLangName.textContent = names[currentTgt];
+  tgtLangCode.textContent = currentTgt;
+}
+
+srcText.addEventListener('input', () => {
+  srcChars.textContent = srcText.value.length;
+});
+
+swapBtn.addEventListener('click', () => {
+  autoDetect = false;
+  autoBtn.classList.remove('active');
+  [currentSrc, currentTgt] = [currentTgt, currentSrc];
+  [srcText.value, tgtText.value] = [tgtText.value, srcText.value];
+  srcChars.textContent = srcText.value.length;
+  tgtChars.textContent = tgtText.value.length;
+  updateLangDisplay();
+});
+
+autoBtn.addEventListener('click', () => {
+  autoDetect = !autoDetect;
+  autoBtn.classList.toggle('active', autoDetect);
+  updateLangDisplay();
+});
+
+copyBtn.addEventListener('click', () => {
+  if (tgtText.value) {
+    navigator.clipboard.writeText(tgtText.value).then(() => {
+      copyBtn.textContent = 'СКОПИРОВАНО ✓';
+      setTimeout(() => { copyBtn.textContent = 'КОПИРОВАТЬ'; }, 1500);
+    });
+  }
+});
+
+clearBtn.addEventListener('click', () => {
+  srcText.value = '';
+  tgtText.value = '';
+  srcChars.textContent = '0';
+  tgtChars.textContent = '0';
+  statusEl.textContent = '';
+  statusEl.className = 'status';
+});
+
+async function doTranslate() {
+  const text = srcText.value.trim();
+  if (!text) return;
+
+  translateBtn.disabled = true;
+  translateBtn.textContent = 'Перевожу';
+  translateBtn.classList.add('loading-dots');
+  statusEl.textContent = 'Переводим...';
+  statusEl.className = 'status';
+  tgtText.value = '';
+
+  try {
+    const body = { text };
+    if (autoDetect) {
+      body.src = 'auto';
+    } else {
+      body.src = currentSrc;
+      body.tgt = currentTgt;
+    }
+    const resp = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Ошибка сервера');
+
+    tgtText.value = data.translation;
+    tgtChars.textContent = data.translation.length;
+    statusEl.textContent = `Готово · ${data.src} → ${data.tgt}`;
+
+    // Update directions if auto-detected
+    if (autoDetect && data.src && data.tgt) {
+      currentSrc = data.src;
+      currentTgt = data.tgt;
+      updateLangDisplay();
+    }
+
+    // Save to history
+    history.unshift({ src: text, tgt: data.translation, srcLang: data.src, tgtLang: data.tgt });
+    if (history.length > 20) history.pop();
+    localStorage.setItem('gadz_translate_history', JSON.stringify(history));
+    renderHistory();
+  } catch (err) {
+    statusEl.textContent = err.message + '. Убедитесь что запущен: python translate.py --server';
+    statusEl.className = 'status error';
+  } finally {
+    translateBtn.disabled = false;
+    translateBtn.textContent = 'Перевести';
+    translateBtn.classList.remove('loading-dots');
+  }
+}
+
+translateBtn.addEventListener('click', doTranslate);
+srcText.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    doTranslate();
+  }
+});
+
+function renderHistory() {
+  if (history.length === 0) {
+    historySection.style.display = 'none';
+    return;
+  }
+  historySection.style.display = '';
+  historyList.innerHTML = '';
+  const names = { 'rus_Cyrl': 'РУС', 'lez_Cyrl': 'ЛЕЗ' };
+  history.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    div.innerHTML = `<div class="src">${escapeHtml(item.src.substring(0, 120))}${item.src.length > 120 ? '…' : ''}</div><div class="tgt">${escapeHtml(item.tgt.substring(0, 120))}${item.tgt.length > 120 ? '…' : ''}</div>`;
+    div.addEventListener('click', () => {
+      srcText.value = item.src;
+      tgtText.value = item.tgt;
+      srcChars.textContent = item.src.length;
+      tgtChars.textContent = item.tgt.length;
+      if (item.srcLang) currentSrc = item.srcLang;
+      if (item.tgtLang) currentTgt = item.tgtLang;
+      autoDetect = false;
+      autoBtn.classList.remove('active');
+      updateLangDisplay();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    historyList.appendChild(div);
+  });
+}
+
+historyClear.addEventListener('click', () => {
+  history = [];
+  localStorage.removeItem('gadz_translate_history');
+  renderHistory();
+});
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Init
+updateLangDisplay();
+renderHistory();
+</script>
+</body>
+</html>

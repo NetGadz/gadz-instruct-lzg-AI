@@ -1,8 +1,11 @@
-﻿# Install PyTorch separately if a specific CUDA build is needed.
-torch>=2.7
+torch>=2.2
 transformers>=4.46,<6
 accelerate>=1.0
 bitsandbytes>=0.45
 soundfile>=0.12
 piper-tts>=1.7
 huggingface-hub>=0.27
+gradio>=4.0
+fastapi>=0.110.0
+uvicorn>=0.28.0
+pydantic>=2.0

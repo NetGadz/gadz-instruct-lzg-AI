@@ -15,8 +15,10 @@ desktop-app/src-tauri/gen/
 # Local packaged application data
 *.log
 
-# Large model weights are tracked with Git LFS.
+# Large model weights are tracked with Git LFS or downloaded from HF.
 models/vits-lez-tts/checkpoint/
+models/gadz1-8b/
+lezgi-nllb-600m-200k-syntetics/
 .cache/
 
 # Runtime audio and editor files
